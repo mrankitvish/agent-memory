@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Agent Memory</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/ui/app.css">
+  <script type="module" src="/ui/app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="/" aria-label="Agent Memory home"><span class="brand-mark"><i data-lucide="network"></i></span>Agent Memory</a>
+    <span class="workspace-label">LOCAL WORKSPACE</span>
+    <span class="connection" id="connection">Connecting</span>
+  </header>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Memory filters">
+      <div class="sidebar-heading"><i data-lucide="database"></i><span>Memory library</span></div>
+      <label class="field">Namespace<select id="namespace"><option value="">All namespaces</option><option value="default">default</option></select></label>
+      <div class="filter-title">MEMORY TYPE</div>
+      <nav id="types" aria-label="Memory type">
+        <button class="type-filter active" data-type=""><i data-lucide="layers"></i>All memories</button>
+        <button class="type-filter" data-type="semantic"><span class="dot semantic"></span>Semantic</button>
+        <button class="type-filter" data-type="episodic"><span class="dot episodic"></span>Episodic</button>
+        <button class="type-filter" data-type="procedural"><span class="dot procedural"></span>Procedural</button>
+        <button class="type-filter" data-type="profile"><span class="dot profile"></span>Profile</button>
+        <button class="type-filter" data-type="working"><span class="dot working"></span>Working</button>
+      </nav>
+      <div class="sidebar-footer"><span class="dot semantic"></span><span>Local storage<br><small>SQLite + Chroma</small></span></div>
+    </aside>
+    <main>
+      <section class="heading-band">
+        <div><div class="eyebrow">KNOWLEDGE WORKSPACE</div><h1>Memory atlas</h1></div>
+        <button id="new-memory" class="primary"><i data-lucide="plus"></i>New memory</button>
+      </section>
+      <section class="stats" aria-label="Memory statistics">
+        <div><span>Total memories</span><strong id="total-count">0</strong></div>
+        <div><span>In this view</span><strong id="view-count">0</strong></div>
+        <div><span>Shared-tag links</span><strong id="link-count">0</strong></div>
+        <div><span>Namespaces</span><strong id="namespace-count">0</strong></div>
+      </section>
+      <div class="toolbar">
+        <div class="tabs" role="tablist" aria-label="Memory view">
+          <button id="graph-tab" role="tab" aria-selected="true" aria-controls="graph-view"><i data-lucide="orbit"></i>3D graph</button>
+          <button id="list-tab" role="tab" aria-selected="false" aria-controls="list-view"><i data-lucide="list"></i>List</button>
+        </div>
+        <form id="search-form" class="search-form" role="search">
+          <label class="sr-only" for="search">Search memories</label>
+          <input id="search" type="search" placeholder="Search memories" maxlength="2000">
+          <select id="search-mode" aria-label="Search mode"><option value="text">Text</option><option value="semantic">Semantic</option></select>
+          <button class="icon-button" type="submit" title="Search" aria-label="Search"><i data-lucide="search"></i></button>
+        </form>
+        <button id="refresh" class="icon-button" title="Refresh memories" aria-label="Refresh memories"><i data-lucide="refresh-cw"></i></button>
+        <button id="clear-filters" class="icon-button" title="Clear filters" aria-label="Clear filters" disabled><i data-lucide="filter-x"></i></button>
+      </div>
+      <div id="notice" role="status" hidden></div>
+      <section id="graph-view" role="tabpanel" aria-labelledby="graph-tab">
+        <div id="graph" tabindex="0" aria-label="Interactive 3D memory graph"></div>
+        <div class="graph-controls" aria-label="Graph controls">
+          <button id="fit" class="icon-button" title="Fit graph" aria-label="Fit graph"><i data-lucide="scan"></i></button>
+          <button id="zoom-in" class="icon-button" title="Zoom in" aria-label="Zoom in"><i data-lucide="zoom-in"></i></button>
+          <button id="zoom-out" class="icon-button" title="Zoom out" aria-label="Zoom out"><i data-lucide="zoom-out"></i></button>
+          <label title="Show memory titles"><input type="checkbox" id="labels" checked>Labels</label>
+          <label title="Rotate graph automatically"><input type="checkbox" id="rotate">Rotate</label>
+        </div>
+        <div id="graph-empty" class="empty-state" hidden><i data-lucide="network"></i><h2>No memories yet</h2><button id="empty-create" class="primary"><i data-lucide="plus"></i>New memory</button></div>
+        <div id="graph-tooltip" role="tooltip" hidden></div>
+        <div class="graph-footer"><span id="graph-caption">Shared tags</span><span id="graph-limit"></span></div>
+      </section>
+      <section id="list-view" role="tabpanel" aria-labelledby="list-tab" hidden>
+        <div class="table-wrap"><table><thead><tr><th>Memory</th><th>Type</th><th>Namespace</th><th>Updated</th><th class="actions-heading">Actions</th></tr></thead><tbody id="memory-rows"></tbody></table></div>
+        <div id="list-empty" class="empty-state" hidden><i data-lucide="search"></i><h2>No matching memories</h2></div>
+        <div class="pagination"><span id="page-summary"></span><button id="previous" class="icon-button" aria-label="Previous page" title="Previous page"><i data-lucide="chevron-left"></i></button><button id="next" class="icon-button" aria-label="Next page" title="Next page"><i data-lucide="chevron-right"></i></button></div>
+      </section>
+    </main>
+  </div>
+  <dialog id="detail-dialog" aria-labelledby="detail-title">
+    <div class="dialog-heading"><span class="eyebrow">MEMORY DETAIL</span><button data-close="detail-dialog" class="icon-button" title="Close" aria-label="Close details"><i data-lucide="x"></i></button></div>
+    <h2 id="detail-title"></h2><div id="detail-meta" class="metadata"></div><div id="detail-tags" class="tags"></div>
+    <pre id="detail-content"></pre><details id="chunks"><summary>Indexed chunks</summary><div id="chunk-content"></div></details>
+    <div class="dialog-actions"><button id="delete-memory" class="danger"><i data-lucide="trash-2"></i>Delete</button><span class="spacer"></span><button id="duplicate-memory" class="icon-button" title="Duplicate memory" aria-label="Duplicate memory"><i data-lucide="copy-plus"></i></button><button id="copy-memory" class="icon-button" title="Copy text" aria-label="Copy text"><i data-lucide="copy"></i></button><button id="export-memory" class="icon-button" title="Download memory JSON" aria-label="Download memory JSON"><i data-lucide="download"></i></button><button id="edit-memory" class="primary"><i data-lucide="pencil"></i>Edit memory</button></div>
+  </dialog>
+  <dialog id="editor-dialog" aria-labelledby="editor-title">
+    <form id="editor-form">
+      <div class="dialog-heading"><h2 id="editor-title">New memory</h2><button type="button" data-close="editor-dialog" class="icon-button" aria-label="Close editor" title="Close"><i data-lucide="x"></i></button></div>
+      <label class="field">Title<input id="memory-title" required maxlength="200"></label>
+      <div class="field-grid"><label class="field">Namespace<input id="memory-namespace" required value="default" maxlength="60" pattern="[A-Za-z0-9]([A-Za-z0-9_\-]{0,58}[A-Za-z0-9])?"></label><label class="field">Type<select id="memory-type"><option value="semantic">Semantic</option><option value="episodic">Episodic</option><option value="procedural">Procedural</option><option value="profile">Profile</option><option value="working">Working</option></select></label></div>
+      <label class="field">Text<textarea id="memory-content" required maxlength="100000" rows="10"></textarea></label>
+      <output id="text-count" for="memory-content">0 / 100,000</output>
+      <label class="field">Tags<input id="memory-tags" placeholder="project, release, preference" maxlength="1020"></label>
+      <div id="editor-error" role="alert" hidden></div>
+      <div class="dialog-actions"><button type="button" data-close="editor-dialog">Cancel</button><button id="save-memory" class="primary" type="submit"><i data-lucide="save"></i><span id="save-label">Save memory</span></button></div>
+    </form>
+  </dialog>
+  <dialog id="delete-dialog" aria-labelledby="delete-title"><h2 id="delete-title">Delete this memory?</h2><p id="delete-name"></p><p id="delete-error" role="alert" hidden></p><div class="dialog-actions"><button data-close="delete-dialog">Cancel</button><button id="confirm-delete" class="danger">Delete permanently</button></div></dialog>
+  <dialog id="discard-dialog" aria-labelledby="discard-title"><h2 id="discard-title">Discard unsaved changes?</h2><div class="dialog-actions"><button data-close="discard-dialog">Keep editing</button><button id="discard-edit" class="danger">Discard changes</button></div></dialog>
+  <div id="toast" role="status" hidden></div>
+</body>
+</html>

@@ -1,0 +1,11 @@
+.venv/
+node_modules/
+__pycache__/
+*.pyc
+.env
+data/
+dist/
+test-results/
+.build-venv/
+build/
+packaging/
