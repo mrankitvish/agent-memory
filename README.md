@@ -7,7 +7,9 @@
 
 **Agent Memory** provides a local, text-only persistent memory system for MCP (Model Context Protocol) agents. It comes with a beautiful local browser workspace and an interactive 3D memory graph to visualize how your agents store, connect, and retrieve information.
 
-https://github.com/mrankitvish/agent-memory/blob/master/assets/demo.webm
+<div align="center">
+  <img src="./assets/demo.gif" width="100%" alt="Agent Memory Demo" />
+</div>
 
 ## 📚 Documentation
 
